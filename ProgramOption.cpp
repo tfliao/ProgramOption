@@ -1,6 +1,7 @@
 // Copyright (C) 2014-2014 tfliao <tingfuliao@gmail.com>
 #include "ProgramOption.h"
 #include <iostream>
+#include <sstream>
 #include <cstdio>
 using namespace std;
 
@@ -188,10 +189,27 @@ const Option* ProgramOption::findOption( const string& long_key, char short_key 
 	return NULL;
 }
 
+void ProgramOption::appendDesc(ostream& os, const string& first_line, const string& desc) const
+{
+	istringstream iss(desc);
+	string line;
+	bool first = true;
+	int width = first_line.length();
+	while (getline(iss, line)) {
+		if (first) {
+			os << first_line << line << endl;
+			first = false;
+		} else {
+			os << string(width, ' ') << line << endl;
+		}
+	}
+}
+
 string ProgramOption::usage() const
 {
 	ostringstream oss ;
-	oss << "Usage: " << m_progname << (m_show_options>0?" [options]":"") ;
+	oss << "Usage: " << m_progname;
+	oss << (m_show_options > 0 && !testFlag(OPTION_IN_END)?" [options]":"") ;
 	for (unsigned int i=0;i<m_default_options.size();++i) {
 		const Option& opt = m_default_options[i];
 		oss << " "
@@ -199,7 +217,9 @@ string ProgramOption::usage() const
 			<< opt.m_name
 			<< (opt.check_is_arg_list() ? " ... ": "") 
 			<< (opt.check_is_optional() ? "]": "") ;
-	} oss << endl;
+	}
+	oss << (m_show_options > 0 && testFlag(OPTION_IN_END)?" [options]":"") ;
+	oss << endl;
 	if (!m_desc.empty()) {
 		oss << m_desc << endl << endl;
 	}
@@ -208,8 +228,8 @@ string ProgramOption::usage() const
 		const Option& opt = m_default_options[i];
 		if (!opt.m_desc.empty()) {
 			char buf[64];
-			sprintf(buf, "%-*s", m_max_def_width, opt.m_name.c_str());
-			oss << "  " << buf << ": " << opt.m_desc << endl;
+			sprintf(buf, "  %-*s: ", m_max_def_width, opt.m_name.c_str());
+			appendDesc(oss, buf, opt.m_desc);
 		}
 	}
 	if (m_show_options > 0) {
@@ -229,9 +249,8 @@ string ProgramOption::usage() const
 		string sbuf = buf;
 		if (!opt.check_is_no_arg()) sbuf += " " + opt.m_name;
 		
-		sprintf(buf, "%-*s", m_max_opt_width, sbuf.c_str());
-
-		oss << "  " << buf << "  " << opt.m_desc << endl;
+		sprintf(buf, "  %-*s  ", m_max_opt_width, sbuf.c_str());
+		appendDesc(oss, buf, opt.m_desc);
 	}
 
 	return oss.str() ;
@@ -272,3 +291,18 @@ BaseInvoker* ProgramOption::invoke_help( ostream& os ) const
 {
 	return new InvokeHelp(*this, os);
 }
+
+void ProgramOption::setFlag(int flag, bool on)
+{
+	if (on) {
+		m_flag |= (1 << flag);
+	} else {
+		m_flag &= ~(1 << flag);
+	}
+}
+
+bool ProgramOption::testFlag(int flag) const
+{
+	return (m_flag & (1 << flag)) != 0;
+}
+

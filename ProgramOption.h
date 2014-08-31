@@ -35,6 +35,11 @@ private:
 	int m_idx_def;
 	bool m_use_next;
 
+	enum Flags {
+		OPTION_IN_END = 0, // display [option] after default arguments
+	};
+	unsigned int m_flag;
+
 public:
 	ProgramOption(const string& progname, const string& desc = "") 
 		: m_progname(progname)
@@ -46,11 +51,13 @@ public:
 
 	bool addOption(const Option& option) ;
 
-	bool parse ( int argc, char** argv ) ;
+	bool parse (int argc, char** argv) ;
 	string usage() const ;
 	void reset () ;
 	const string& getError() const;
 	BaseInvoker* invoke_help(std::ostream& os) const ;
+
+	void setFlag(int flag, bool on = true);
 
 private:
 	bool parseDefault(const string& opt);
@@ -58,8 +65,11 @@ private:
 	bool parseShort(const string& opt, const char* next);
 	const Option* findOption(const string& long_key, char short_key);
 
-	void exitError ( const string& msg ) ;
-	bool setError ( const string& msg ) ;
+	void exitError (const string& msg) ;
+	bool setError (const string& msg) ;
+
+	void appendDesc(std::ostream& os, const string& first_line, const string& desc) const;
+	bool testFlag(int flag) const;
 };
 
 #endif

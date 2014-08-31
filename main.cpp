@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 
 	po.addOption(Option(operation, load<string>)
 		.is_default_arg("operation")
-		.description("some operations")
+		.description("some operations\nanother line\n")
 		);
 	po.addOption(Option(outfile, load<string>)
 		.is_default_arg("outfile")
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	po.addOption(Option(new ValueSetter<bool>(read_stdin, true))
 		.long_key("also-read-stdin")
 		.no_arg()
-		.description("read stdin as an additional input (if infile specified)")
+		.description("read stdin as an additional input\n(if infile specified)")
 		);
 
 	po.addOption(Option(new ValueSetter<bool>(verbose, true))
