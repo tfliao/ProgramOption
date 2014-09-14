@@ -67,7 +67,7 @@ public:
 		if (m_invoker) delete m_invoker;
 	}
 
-	inline Option& operator= ( const Option& rhs ) 
+	inline Option& operator= ( const Option& rhs )
 	{
 		m_long = rhs.m_long;
 		m_short = rhs.m_short;
@@ -76,6 +76,7 @@ public:
 		m_invoker = rhs.m_invoker;
 		m_flag = rhs.m_flag;
 		rhs.m_invoker = NULL;
+		return *this;
 	}
 
 	inline Option& keys(const string& long_key, char short_key) {

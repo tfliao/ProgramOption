@@ -10,7 +10,7 @@ template<>
 bool load<string> ( string& ref, const string& key, const string& value )
 {
 	ref = value ;
-	return true ; 
+	return true ;
 }
 
 

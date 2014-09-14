@@ -27,6 +27,12 @@ public:
 		so we keep this field
 	*/
 	virtual bool operator()(const string& key, const string& value) = 0;
+
+	/*!
+		@brief  virtual destrucor
+		@author	T.F. Liao
+	*/
+	virtual ~BaseInvoker(){}
 };
 
 /*!
