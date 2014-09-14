@@ -6,6 +6,8 @@
 #include <string>
 using std::string;
 
+namespace program_option {
+
 class ProgramOption ;
 
 /*!
@@ -164,5 +166,7 @@ private:
 	inline bool has_short() const { return m_short != 0; }
 
 };
+
+}
 
 #endif

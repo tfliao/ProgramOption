@@ -7,6 +7,8 @@ using namespace std;
 
 #pragma warning( disable : 4996 )
 
+namespace program_option {
+
 bool ProgramOption::addOption( const Option& option )
 {
 	string msg ;
@@ -304,5 +306,7 @@ void ProgramOption::setFlag(int flag, bool on)
 bool ProgramOption::testFlag(int flag) const
 {
 	return (m_flag & (1 << flag)) != 0;
+}
+
 }
 

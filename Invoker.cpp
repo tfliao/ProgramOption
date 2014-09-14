@@ -4,6 +4,8 @@
 #include <cctype>
 using namespace std ;
 
+namespace program_option {
+
 template<>
 bool load<string> ( string& ref, const string& key, const string& value )
 {
@@ -23,4 +25,6 @@ bool load<bool> ( bool& ref, const string& key, const string& value )
 
 	ref = ( buffer == "TRUE" || buffer == "1" ) ;
 	return true;
+}
+
 }

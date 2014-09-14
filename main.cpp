@@ -2,6 +2,7 @@
 
 #include <iostream>
 using namespace std;
+using namespace program_option;
 
 namespace config
 {
@@ -33,12 +34,12 @@ namespace config
 	do whatever to the infile (or stdin), and write to outfile (or stdout)
 
 	options:
-		--also-read-stdin	   read stdin as an additional input (if infile specified)
-		--max-size, -M <size>   max output size
-		--help, -h			  show help message
-		 -v					 verbose
+		--also-read-stdin     read stdin as an additional input (if infile specified)
+		--max-size, -M <size> max output size
+		--help, -h            show help message
+		 -v                   verbose
 		
-		--bomb, -b			  shutdown system (invisible)
+		--bomb, -b            shutdown system (invisible)
 */
 
 void bomb()
@@ -49,7 +50,7 @@ void bomb()
 int main(int argc, char* argv[])
 {
 	ProgramOption po(argv[0], "do whatever to the infile (or stdin), and write to outfile (or stdout)");
-	using namespace config;   
+	using namespace config;
 
 	po.addOption(Option(operation, load<string>)
 		.is_default_arg("operation")
@@ -67,7 +68,7 @@ int main(int argc, char* argv[])
 		.description("input file(s) (stdin if no specified)")
 		);
 	po.addOption(Option(po.invoke_help(cerr)).keys("help", 'h').no_arg().description("show help message"));
-	
+
 	po.addOption(Option(new ValueSetter<bool>(read_stdin, true))
 		.long_key("also-read-stdin")
 		.no_arg()

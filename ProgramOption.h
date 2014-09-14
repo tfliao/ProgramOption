@@ -11,11 +11,13 @@
 
 using std::string ;
 
+namespace program_option {
+
 class ProgramOption
 {
 private:
 	string m_progname;
-	string m_desc; 
+	string m_desc;
 
 	string m_errormsg;
 
@@ -41,7 +43,7 @@ private:
 	unsigned int m_flag;
 
 public:
-	ProgramOption(const string& progname, const string& desc = "") 
+	ProgramOption(const string& progname, const string& desc = "")
 		: m_progname(progname)
 		, m_desc(desc)
 		, m_max_opt_width(0)
@@ -71,5 +73,7 @@ private:
 	void appendDesc(std::ostream& os, const string& first_line, const string& desc) const;
 	bool testFlag(int flag) const;
 };
+
+}
 
 #endif

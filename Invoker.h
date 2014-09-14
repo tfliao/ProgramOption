@@ -7,6 +7,9 @@
 #include <limits>
 using std::string ;
 
+
+namespace program_option {
+
 /*!
 	@brief  base class of Invoker
 	@author T.F. Liao
@@ -152,5 +155,6 @@ MethodCaller<_Callable>* newMethodCaller(_Callable c)
 	return new MethodCaller<_Callable>(c);
 }
 
+}
 
 #endif
