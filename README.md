@@ -85,4 +85,6 @@ the auto generated help message will looks like:
 
 ### not implement yet
 - variable overwrite handling 
+- show help with levels
+- group options
 - ...
