@@ -40,6 +40,7 @@ namespace config
 		 -v                   verbose
 		
 		--bomb, -b            shutdown system (invisible)
+        --help2               show level2 help message
 */
 
 void bomb()
@@ -91,10 +92,11 @@ int main(int argc, char* argv[])
 		.description("shutdown system (invisible)")
 		);
 
+	po.addOption(Option(po.invoke_help(cerr, 2)).long_key("help2").no_arg().description("show level2 help message").help_level(2));
 
 	if (!po.parse(argc, argv)) {
 		cerr << po.getError() << endl;
-		cerr << po.usage() ;
+		cerr << po.usage(0) ;
 		exit(1);
 	}
 

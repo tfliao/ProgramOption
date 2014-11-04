@@ -16,7 +16,7 @@ The default option is which has no name specified, its meanning is come from its
 - default option may be optional, or listed. <br/>
 - for example, "file" in grep is optional, and listed, you can specified no flie to grep, or multiple files.
 
-### long optio
+### long option
 The long option is who can specified its meanning by two hyphen ("--") and its name.<br/>
 
     grep ??? ???
@@ -61,6 +61,11 @@ in compressed short-opt, the last opt may have argument
 - -ABCo argument
 - -ABCo=argument
 
+### help level
+sometimes we don't want to disclose all option for users. <br/>
+we can set help_level to each options. <br/>
+call usage(level) only return the options with help_level smaller than "level"
+
 ### auto generation of help message
 the auto generated help message will looks like:
 
@@ -85,6 +90,5 @@ the auto generated help message will looks like:
 
 ### not implement yet
 - variable overwrite handling 
-- show help with levels
 - group options
 - ...

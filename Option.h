@@ -28,10 +28,12 @@ private:
 		FLAG_DEFAULT	= 1, ///< the option is default, using postion to identify it
 		FLAG_OPTIONAL   = 2, ///< default option which is optional
 		FLAG_ARG_LIST   = 4, ///< default option which accepts all following arguments
-		FLAG_INVISIBLE  = 8, ///< the option is hidden from help
-		FLAG_NO_ARG	 = 16, ///< the option need no argument
+		FLAG_NO_ARG	 = 8, ///< the option need no argument
 	};
 	unsigned int m_flag;
+
+    int m_help_level;
+    static const int InvisibleLevel = 99;
 
 	string m_warning;
 public:
@@ -42,6 +44,7 @@ public:
 		, m_desc("")
 		, m_invoker(p)
 		, m_flag(0)
+        , m_help_level(0)
 	{}
 	template<class _T, class _Loader>
 	inline Option(_T& ref, _Loader loader)
@@ -51,6 +54,7 @@ public:
 		, m_desc("")
 		, m_invoker(new Invoker<_T, _Loader>(ref, loader))
 		, m_flag(0)
+        , m_help_level(0)
 	{}
 	inline Option(const Option& rhs)
 		: m_long(rhs.m_long)
@@ -59,6 +63,7 @@ public:
 		, m_desc(rhs.m_desc)
 		, m_invoker(rhs.m_invoker)
 		, m_flag(rhs.m_flag)
+        , m_help_level(rhs.m_help_level)
 	{
 		rhs.m_invoker = NULL;
 	}
@@ -73,8 +78,10 @@ public:
 		m_short = rhs.m_short;
 		m_name = rhs.m_name;
 		m_desc = rhs.m_desc;
-		m_invoker = rhs.m_invoker;
 		m_flag = rhs.m_flag;
+        m_help_level = rhs.m_help_level;
+
+		m_invoker = rhs.m_invoker;
 		rhs.m_invoker = NULL;
 		return *this;
 	}
@@ -126,9 +133,13 @@ public:
 		return *this;
 	}
 	inline Option& invisible() {
-		m_flag |= FLAG_INVISIBLE;
+        m_help_level = InvisibleLevel;
 		return *this;
 	}
+    inline Option& help_level(int level) {
+        m_help_level = level;
+        return *this;
+    }
 	inline Option& no_arg() {
 		m_flag |= FLAG_NO_ARG;
 		return *this;
@@ -160,9 +171,12 @@ private:
 	inline bool check_is_default()   const { return (m_flag & FLAG_DEFAULT) != 0; }
 	inline bool check_is_arg_list()   const { return (m_flag & FLAG_ARG_LIST) != 0; }
 	inline bool check_is_optional()  const { return (m_flag & FLAG_OPTIONAL) != 0; }
-	inline bool check_is_invisible() const { return (m_flag & FLAG_INVISIBLE) != 0; }
 	inline bool check_is_no_arg()	const { return (m_flag & FLAG_NO_ARG) != 0; }
+	
+    inline bool check_is_invisible() const { return (m_help_level == InvisibleLevel); }
+    inline bool check_visible_for(int level) const { return m_help_level <= level; } 
 
+    inline int help_level() const { return m_help_level; }
 	inline bool has_long() const { return !m_long.empty(); }
 	inline bool has_short() const { return m_short != 0; }
 

@@ -28,10 +28,12 @@ private:
 	std::set<string> m_long_opts;
 	std::set<char> m_short_opts;
 
-	/// display
-	int m_max_opt_width;
-	int m_show_options;
-	int m_max_def_width;
+    struct DisplayConf
+    {
+        int max_opt_width;
+        bool has_options;
+        int max_def_width;
+    };
 
 	// parsing
 	int m_idx_def;
@@ -46,18 +48,15 @@ public:
 	ProgramOption(const string& progname, const string& desc = "")
 		: m_progname(progname)
 		, m_desc(desc)
-		, m_max_opt_width(0)
-		, m_show_options(0)
-		, m_max_def_width(0)
 	{ reset(); }
 
 	bool addOption(const Option& option) ;
 
 	bool parse (int argc, char** argv) ;
-	string usage() const ;
+	string usage(int level = 0) const ;
 	void reset () ;
 	const string& getError() const;
-	BaseInvoker* invoke_help(std::ostream& os) const ;
+	BaseInvoker* invoke_help(std::ostream& os, int level = 0) const ;
 
 	void setFlag(int flag, bool on = true);
 
@@ -72,6 +71,8 @@ private:
 
 	void appendDesc(std::ostream& os, const string& first_line, const string& desc) const;
 	bool testFlag(int flag) const;
+
+    void analysisDisplayConf(DisplayConf& conf, int level = 0) const;
 };
 
 }

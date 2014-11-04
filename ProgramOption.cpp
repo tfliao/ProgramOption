@@ -42,21 +42,8 @@ bool ProgramOption::addOption( const Option& option )
 	
 	if (option.check_is_default()) {
 		m_default_options.push_back(option);
-		int width = (option.m_desc.empty()? 0: option.m_name.length());
-		m_max_def_width = max(m_max_def_width, width);
 	} else {
 		m_options.push_back(option);
-		int opt_width = 0;
-		if (option.has_long()) opt_width += 2 + option.m_long.length();
-		if (option.has_short()) opt_width += 2 + 2;
-		if (!option.check_is_no_arg()) opt_width += 1 + option.m_name.length();
-		if (option.check_is_invisible()) opt_width = 0;
-		m_max_opt_width = max(m_max_opt_width, opt_width);
-
-		if (!option.check_is_invisible()) {
-			m_show_options ++ ;
-		}
-
 	}
 
 	return true;
@@ -207,11 +194,14 @@ void ProgramOption::appendDesc(ostream& os, const string& first_line, const stri
 	}
 }
 
-string ProgramOption::usage() const
+string ProgramOption::usage(int level) const
 {
-	ostringstream oss ;
+    DisplayConf conf;
+	analysisDisplayConf(conf, level);
+    
+    ostringstream oss ;
 	oss << "Usage: " << m_progname;
-	oss << (m_show_options > 0 && !testFlag(OPTION_IN_END)?" [options]":"") ;
+	oss << (conf.has_options && !testFlag(OPTION_IN_END)?" [options]":"") ;
 	for (unsigned int i=0;i<m_default_options.size();++i) {
 		const Option& opt = m_default_options[i];
 		oss << " "
@@ -220,7 +210,7 @@ string ProgramOption::usage() const
 			<< (opt.check_is_arg_list() ? " ... ": "") 
 			<< (opt.check_is_optional() ? "]": "") ;
 	}
-	oss << (m_show_options > 0 && testFlag(OPTION_IN_END)?" [options]":"") ;
+	oss << (conf.has_options && testFlag(OPTION_IN_END)?" [options]":"") ;
 	oss << endl;
 	if (!m_desc.empty()) {
 		oss << m_desc << endl << endl;
@@ -230,16 +220,16 @@ string ProgramOption::usage() const
 		const Option& opt = m_default_options[i];
 		if (!opt.m_desc.empty()) {
 			char buf[64];
-			sprintf(buf, "  %-*s: ", m_max_def_width, opt.m_name.c_str());
+			sprintf(buf, "  %-*s: ", conf.max_def_width, opt.m_name.c_str());
 			appendDesc(oss, buf, opt.m_desc);
 		}
 	}
-	if (m_show_options > 0) {
+	if (conf.has_options) {
 		oss << "options: " << endl;
 	}
 	for (unsigned int i=0;i<m_options.size();++i) {
 		const Option& opt = m_options[i];
-		if (opt.check_is_invisible()) continue;
+		if (!opt.check_visible_for(level)) continue;
 
 		char buf[64];
 		if (opt.has_long() && opt.has_short()) 
@@ -251,7 +241,7 @@ string ProgramOption::usage() const
 		string sbuf = buf;
 		if (!opt.check_is_no_arg()) sbuf += " " + opt.m_name;
 		
-		sprintf(buf, "  %-*s  ", m_max_opt_width, sbuf.c_str());
+		sprintf(buf, "  %-*s  ", conf.max_opt_width, sbuf.c_str());
 		appendDesc(oss, buf, opt.m_desc);
 	}
 
@@ -284,14 +274,15 @@ class InvokeHelp : public BaseInvoker
 {
 	const ProgramOption& m_po ;
 	ostream& m_os;
+    int m_level;
 public:
-	InvokeHelp(const ProgramOption& po, ostream& os) : m_po(po), m_os(os) {}
-	bool operator()(const string& key, const string& value) { m_os << m_po.usage() ; exit(0); return true ; }
+	InvokeHelp(const ProgramOption& po, ostream& os, int level) : m_po(po), m_os(os), m_level(level) {}
+	bool operator()(const string& key, const string& value) { m_os << m_po.usage(m_level) ; exit(0); return true ; }
 };
 
-BaseInvoker* ProgramOption::invoke_help( ostream& os ) const 
+BaseInvoker* ProgramOption::invoke_help( ostream& os, int level ) const 
 {
-	return new InvokeHelp(*this, os);
+	return new InvokeHelp(*this, os, level);
 }
 
 void ProgramOption::setFlag(int flag, bool on)
@@ -306,6 +297,31 @@ void ProgramOption::setFlag(int flag, bool on)
 bool ProgramOption::testFlag(int flag) const
 {
 	return (m_flag & (1 << flag)) != 0;
+}
+
+void ProgramOption::analysisDisplayConf(DisplayConf& conf, int level) const
+{
+    conf.has_options = false;
+    conf.max_opt_width = 0;
+    conf.max_def_width = 0;
+
+    for (unsigned int i = 0; i < m_default_options.size(); ++i) {
+        const Option& option = m_default_options[i];
+        int width = (option.m_desc.empty()? 0: option.m_name.length());
+        conf.max_def_width = max(conf.max_def_width, width);
+    }
+
+    for (unsigned int i = 0; i < m_options.size(); ++i) {
+        const Option& option = m_options[i];
+        if (option.help_level() <= level) {
+            int width = 0;
+            if (option.has_long()) width += 2 + option.m_long.length();
+            if (option.has_short()) width += 2 + 2;
+            if (!option.check_is_no_arg()) width += 1 + option.m_name.length();
+            conf.max_opt_width = max(conf.max_opt_width, width);
+            conf.has_options = true;
+        }
+    }
 }
 
 }
