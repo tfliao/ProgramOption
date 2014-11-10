@@ -23,6 +23,7 @@ private:
 	string m_name;
 	string m_desc;
 	mutable BaseInvoker* m_invoker;
+	string m_group;
 
 	enum Flag {
 		FLAG_DEFAULT	= 1, ///< the option is default, using postion to identify it
@@ -32,8 +33,8 @@ private:
 	};
 	unsigned int m_flag;
 
-    int m_help_level;
-    static const int InvisibleLevel = 99;
+	int m_help_level;
+	static const int InvisibleLevel = 99;
 
 	string m_warning;
 public:
@@ -44,7 +45,7 @@ public:
 		, m_desc("")
 		, m_invoker(p)
 		, m_flag(0)
-        , m_help_level(0)
+		, m_help_level(0)
 	{}
 	template<class _T, class _Loader>
 	inline Option(_T& ref, _Loader loader)
@@ -54,7 +55,7 @@ public:
 		, m_desc("")
 		, m_invoker(new Invoker<_T, _Loader>(ref, loader))
 		, m_flag(0)
-        , m_help_level(0)
+		, m_help_level(0)
 	{}
 	inline Option(const Option& rhs)
 		: m_long(rhs.m_long)
@@ -63,7 +64,7 @@ public:
 		, m_desc(rhs.m_desc)
 		, m_invoker(rhs.m_invoker)
 		, m_flag(rhs.m_flag)
-        , m_help_level(rhs.m_help_level)
+		, m_help_level(rhs.m_help_level)
 	{
 		rhs.m_invoker = NULL;
 	}
@@ -79,7 +80,7 @@ public:
 		m_name = rhs.m_name;
 		m_desc = rhs.m_desc;
 		m_flag = rhs.m_flag;
-        m_help_level = rhs.m_help_level;
+		m_help_level = rhs.m_help_level;
 
 		m_invoker = rhs.m_invoker;
 		rhs.m_invoker = NULL;
@@ -104,6 +105,10 @@ public:
 	}
 	inline Option& description(const string& desc) {
 		m_desc = desc ;
+		return *this;
+	}
+	inline Option& group(const string& group) {
+		m_group = group;
 		return *this;
 	}
 	inline Option& invoker(BaseInvoker* p) {
@@ -133,13 +138,13 @@ public:
 		return *this;
 	}
 	inline Option& invisible() {
-        m_help_level = InvisibleLevel;
+		m_help_level = InvisibleLevel;
 		return *this;
 	}
-    inline Option& help_level(int level) {
-        m_help_level = level;
-        return *this;
-    }
+	inline Option& help_level(int level) {
+		m_help_level = level;
+		return *this;
+	}
 	inline Option& no_arg() {
 		m_flag |= FLAG_NO_ARG;
 		return *this;
@@ -165,6 +170,15 @@ private:
 				break;
 			}
 		}
+		// 3. long is string match /[0-9A-Za-z][0-9A-Za-z_\-]*/
+		for (unsigned int i=0;i<m_group.length();++i) {
+			char c = m_group[i];
+			if (!(isdigit(c) || isalpha(c) || (i!=0 && (c=='_' || c=='-')))) {
+				msg += "long key must be /[\\d\\w][\\d\\w_-]*/";
+				ret = false;
+				break;
+			}
+		}
 		return ret;
 	}
 
@@ -173,10 +187,10 @@ private:
 	inline bool check_is_optional()  const { return (m_flag & FLAG_OPTIONAL) != 0; }
 	inline bool check_is_no_arg()	const { return (m_flag & FLAG_NO_ARG) != 0; }
 	
-    inline bool check_is_invisible() const { return (m_help_level == InvisibleLevel); }
-    inline bool check_visible_for(int level) const { return m_help_level <= level; } 
+	inline bool check_is_invisible() const { return (m_help_level == InvisibleLevel); }
+	inline bool check_visible_for(int level) const { return m_help_level <= level; } 
 
-    inline int help_level() const { return m_help_level; }
+	inline int help_level() const { return m_help_level; }
 	inline bool has_long() const { return !m_long.empty(); }
 	inline bool has_short() const { return m_short != 0; }
 

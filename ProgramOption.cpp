@@ -166,7 +166,7 @@ bool ProgramOption::parseShort( const string& opt, const char* next )
 	return true;
 }
 
-const Option* ProgramOption::findOption( const string& long_key, char short_key )
+const Option* ProgramOption::findOption( const string& long_key, char short_key ) const
 {
 	for (int i=0;i<m_options.size();++i) {
 		const Option& opt = m_options[i];
@@ -196,10 +196,10 @@ void ProgramOption::appendDesc(ostream& os, const string& first_line, const stri
 
 string ProgramOption::usage(int level) const
 {
-    DisplayConf conf;
+	DisplayConf conf;
 	analysisDisplayConf(conf, level);
-    
-    ostringstream oss ;
+
+	ostringstream oss ;
 	oss << "Usage: " << m_progname;
 	oss << (conf.has_options && !testFlag(OPTION_IN_END)?" [options]":"") ;
 	for (unsigned int i=0;i<m_default_options.size();++i) {
@@ -274,7 +274,7 @@ class InvokeHelp : public BaseInvoker
 {
 	const ProgramOption& m_po ;
 	ostream& m_os;
-    int m_level;
+	int m_level;
 public:
 	InvokeHelp(const ProgramOption& po, ostream& os, int level) : m_po(po), m_os(os), m_level(level) {}
 	bool operator()(const string& key, const string& value) { m_os << m_po.usage(m_level) ; exit(0); return true ; }
@@ -283,6 +283,26 @@ public:
 BaseInvoker* ProgramOption::invoke_help( ostream& os, int level ) const 
 {
 	return new InvokeHelp(*this, os, level);
+}
+
+class GroupSetter : public BaseInvoker
+{
+	ProgramOption& m_po;
+public:
+	GroupSetter(ProgramOption& po) : m_po(po) {}
+	bool operator()(const string& key, const string& value) { return m_po.setGroup(value); }
+};
+
+BaseInvoker* ProgramOption::invoke_set_group()
+{
+	return new GroupSetter(*this);
+}
+
+bool ProgramOption::setGroup(const string& group)
+{
+	// TODO: add string verify
+	m_group = group;
+	return true;
 }
 
 void ProgramOption::setFlag(int flag, bool on)
@@ -301,27 +321,27 @@ bool ProgramOption::testFlag(int flag) const
 
 void ProgramOption::analysisDisplayConf(DisplayConf& conf, int level) const
 {
-    conf.has_options = false;
-    conf.max_opt_width = 0;
-    conf.max_def_width = 0;
+	conf.has_options = false;
+	conf.max_opt_width = 0;
+	conf.max_def_width = 0;
 
-    for (unsigned int i = 0; i < m_default_options.size(); ++i) {
-        const Option& option = m_default_options[i];
-        int width = (option.m_desc.empty()? 0: option.m_name.length());
-        conf.max_def_width = max(conf.max_def_width, width);
-    }
+	for (unsigned int i = 0; i < m_default_options.size(); ++i) {
+		const Option& option = m_default_options[i];
+		int width = (option.m_desc.empty()? 0: option.m_name.length());
+		conf.max_def_width = max(conf.max_def_width, width);
+	}
 
-    for (unsigned int i = 0; i < m_options.size(); ++i) {
-        const Option& option = m_options[i];
-        if (option.help_level() <= level) {
-            int width = 0;
-            if (option.has_long()) width += 2 + option.m_long.length();
-            if (option.has_short()) width += 2 + 2;
-            if (!option.check_is_no_arg()) width += 1 + option.m_name.length();
-            conf.max_opt_width = max(conf.max_opt_width, width);
-            conf.has_options = true;
-        }
-    }
+	for (unsigned int i = 0; i < m_options.size(); ++i) {
+		const Option& option = m_options[i];
+		if (option.help_level() <= level) {
+			int width = 0;
+			if (option.has_long()) width += 2 + option.m_long.length();
+			if (option.has_short()) width += 2 + 2;
+			if (!option.check_is_no_arg()) width += 1 + option.m_name.length();
+			conf.max_opt_width = max(conf.max_opt_width, width);
+			conf.has_options = true;
+		}
+	}
 }
 
 }
