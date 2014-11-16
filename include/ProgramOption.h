@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 
 using std::string ;
 
@@ -26,8 +27,8 @@ private:
 	std::vector<Option> m_options;
 
 	/// checkers
-	std::set<string> m_long_opts;
-	std::set<char> m_short_opts;
+	std::map<std::string, std::set<string> > m_long_checker;
+	std::map<std::string, std::set<char> > m_short_checker;
 
 	struct DisplayConf
 	{

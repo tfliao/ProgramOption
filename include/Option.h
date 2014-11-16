@@ -29,12 +29,12 @@ private:
 		FLAG_DEFAULT	= 1, ///< the option is default, using postion to identify it
 		FLAG_OPTIONAL   = 2, ///< default option which is optional
 		FLAG_ARG_LIST   = 4, ///< default option which accepts all following arguments
-		FLAG_NO_ARG	 = 8, ///< the option need no argument
+		FLAG_NO_ARG	    = 8, ///< the option need no argument
 	};
 	unsigned int m_flag;
 
 	int m_help_level;
-	static const int InvisibleLevel = 99;
+	static const int InvisibleLevel = 999;
 
 	string m_warning;
 public:
@@ -193,6 +193,11 @@ private:
 	inline int help_level() const { return m_help_level; }
 	inline bool has_long() const { return !m_long.empty(); }
 	inline bool has_short() const { return m_short != 0; }
+	inline bool has_group() const { return !m_group.empty(); }
+
+	static bool group_cmp(const Option& o1, const Option& o2) {
+		return o1.m_group < o2.m_group;
+	}
 
 };
 

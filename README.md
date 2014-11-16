@@ -52,7 +52,8 @@ for long-opt with argument, it can specified by:
 the short option (short-opt) may have argument following or not.<br/>
 for short-opt with argument, it can specified by:
 - -o argument <br/>
-- -o=argument
+- -o=argument <br/>
+- -oargument
 
 for short-opt without argument, it can compress and share on hyphen
 - -ABC
@@ -60,6 +61,7 @@ for short-opt without argument, it can compress and share on hyphen
 in compressed short-opt, the last opt may have argument
 - -ABCo argument
 - -ABCo=argument
+- -ABCoargument
 
 ### help level
 sometimes we don't want to disclose all option for users. <br/>

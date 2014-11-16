@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdio>
+#include <algorithm>
 using namespace std;
 
 #pragma warning( disable : 4996 )
@@ -16,18 +17,32 @@ bool ProgramOption::addOption( const Option& option )
 		return setError(msg);
 	}
 
-	if (option.m_short != 0) {
-		if (m_short_opts.count(option.m_short) != 0) {
-			return setError("duplicate short key");
+	if (option.has_short()) {
+		std::set<char>& checker = m_short_checker[option.m_group];
+		if (checker.count(option.m_short) != 0) {
+			ostringstream oss ;
+			oss << "duplicate short key";
+			if (option.has_group())
+				oss << "[" << option.m_group << "].[" << option.m_short << "]";
+			else
+				oss << "[" << option.m_short << "]";
+			return setError(oss.str());
 		}
-		m_short_opts.insert(option.m_short);
+		checker.insert(option.m_short);
 	}
 
-	if (!option.m_long.empty()) {
-		if (m_long_opts.count(option.m_long) != 0) {
-			return setError("duplicate long key");
+	if (!option.has_long()) {
+		std::set<string>& checker = m_long_checker[option.m_group];
+		if (checker.count(option.m_long) != 0) {
+			ostringstream oss ;
+			oss << "duplicate long key";
+			if (option.has_group())
+				oss << "[" << option.m_group << "].[" << option.m_long << "]";
+			else
+				oss << "[" << option.m_long << "]";
+			return setError(oss.str());
 		}
-		m_long_opts.insert(option.m_long);
+		checker.insert(option.m_long);
 	}
 	
 	if (option.check_is_default() && m_default_options.size() > 0) {
@@ -44,6 +59,7 @@ bool ProgramOption::addOption( const Option& option )
 		m_default_options.push_back(option);
 	} else {
 		m_options.push_back(option);
+		stable_sort(m_options.begin(), m_options.end(), Option::group_cmp);
 	}
 
 	return true;
@@ -149,8 +165,12 @@ bool ProgramOption::parseShort( const string& opt, const char* next )
 		}
 		string value;
 		if (!option->check_is_no_arg()) {
-			if (opt[i+1] == '=') {
-				value = opt.substr(i+2);
+			if (i+1 != opt.length()) {
+				if (opt[i+1] == '=') {
+					value = opt.substr(i+2);
+				} else {
+					value = opt.substr(i+1);
+				}
 			} else if (opt[i+1] == 0 && next != NULL) { 
 				value = next;
 				m_use_next = true;
@@ -168,14 +188,19 @@ bool ProgramOption::parseShort( const string& opt, const char* next )
 
 const Option* ProgramOption::findOption( const string& long_key, char short_key ) const
 {
+	const Option* cand = NULL;
 	for (int i=0;i<m_options.size();++i) {
 		const Option& opt = m_options[i];
 		if ( (opt.m_long == long_key && !long_key.empty() ) ||
 			 (opt.m_short == short_key && short_key != 0 ) ) {
-			return &opt;
+			if (opt.m_group == this->m_group) {
+				return &opt; // match both group and key
+			} else if (!opt.has_group()) {
+				cand = &opt; // match key without group
+			}
 		}
 	}
-	return NULL;
+	return cand;
 }
 
 void ProgramOption::appendDesc(ostream& os, const string& first_line, const string& desc) const

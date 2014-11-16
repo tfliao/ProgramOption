@@ -18,7 +18,7 @@ all: $(PROG)
 lib: ${OBJ}
 	ar rc ${LIB} ${OBJ}
 
-$(PROG): $(OBJ) $(HEADER)
+$(PROG): $(OBJ) $(HEADER) lib
 	$(CXX) $(LDFLAGS) ${INCLUDE} -static -o $@ main.cpp -L. -lpo
 
 clean:
