@@ -46,6 +46,7 @@ public:
 		, m_invoker(p)
 		, m_flag(0)
 		, m_help_level(0)
+		, m_group("")
 	{}
 	template<class _T, class _Loader>
 	inline Option(_T& ref, _Loader loader)
@@ -56,6 +57,7 @@ public:
 		, m_invoker(new Invoker<_T, _Loader>(ref, loader))
 		, m_flag(0)
 		, m_help_level(0)
+		, m_group("")
 	{}
 	inline Option(const Option& rhs)
 		: m_long(rhs.m_long)
@@ -65,6 +67,7 @@ public:
 		, m_invoker(rhs.m_invoker)
 		, m_flag(rhs.m_flag)
 		, m_help_level(rhs.m_help_level)
+		, m_group(rhs.m_group)
 	{
 		rhs.m_invoker = NULL;
 	}
@@ -81,6 +84,7 @@ public:
 		m_desc = rhs.m_desc;
 		m_flag = rhs.m_flag;
 		m_help_level = rhs.m_help_level;
+		m_group = rhs.m_group;
 
 		m_invoker = rhs.m_invoker;
 		rhs.m_invoker = NULL;

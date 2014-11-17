@@ -21,7 +21,7 @@ bool ProgramOption::addOption( const Option& option )
 		std::set<char>& checker = m_short_checker[option.m_group];
 		if (checker.count(option.m_short) != 0) {
 			ostringstream oss ;
-			oss << "duplicate short key";
+			oss << "duplicate short key ";
 			if (option.has_group())
 				oss << "[" << option.m_group << "].[" << option.m_short << "]";
 			else
@@ -31,11 +31,11 @@ bool ProgramOption::addOption( const Option& option )
 		checker.insert(option.m_short);
 	}
 
-	if (!option.has_long()) {
+	if (option.has_long()) {
 		std::set<string>& checker = m_long_checker[option.m_group];
 		if (checker.count(option.m_long) != 0) {
 			ostringstream oss ;
-			oss << "duplicate long key";
+			oss << "duplicate long key ";
 			if (option.has_group())
 				oss << "[" << option.m_group << "].[" << option.m_long << "]";
 			else
@@ -252,9 +252,15 @@ string ProgramOption::usage(int level) const
 	if (conf.has_options) {
 		oss << "options: " << endl;
 	}
+	string last_group ;
 	for (unsigned int i=0;i<m_options.size();++i) {
 		const Option& opt = m_options[i];
 		if (!opt.check_visible_for(level)) continue;
+
+		if (opt.m_group != last_group) {
+			last_group = opt.m_group;
+			oss << "[" << last_group << "]:" << endl;
+		}
 
 		char buf[64];
 		if (opt.has_long() && opt.has_short()) 

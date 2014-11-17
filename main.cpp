@@ -46,6 +46,7 @@ namespace config
 void bomb()
 {
 	cerr << "System is going to shutdown ... " << endl;
+	exit(1);
 }
 
 int main(int argc, char* argv[])
@@ -57,6 +58,12 @@ int main(int argc, char* argv[])
 		.is_default_arg("operation")
 		.description("some operations\nanother line\n")
 		);
+	po.addOption(Option(po.invoke_set_group())
+		.is_default_arg("mode")
+		.is_optional()
+		.description("specify mode")
+		);
+
 	po.addOption(Option(outfile, load<string>)
 		.is_default_arg("outfile")
 		.is_optional()
@@ -93,6 +100,16 @@ int main(int argc, char* argv[])
 		);
 
 	po.addOption(Option(po.invoke_help(cerr, 2)).long_key("help2").no_arg().description("show level2 help message").help_level(2));
+
+	po.addOption(Option(new ValueSetter<int>(max_size, -1))
+		.group("dummy")
+		.no_arg()
+		.short_key('M')
+		.description("set size to -1")
+		);
+
+	cerr << po.getError() << endl;
+
 
 	if (!po.parse(argc, argv)) {
 		cerr << po.getError() << endl;
