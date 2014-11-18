@@ -17,6 +17,10 @@ bool ProgramOption::addOption( const Option& option )
 		return setError(msg);
 	}
 
+	if (option.has_group()) {
+		m_groups.insert(option.m_group);
+	}
+
 	if (option.has_short()) {
 		std::set<char>& checker = m_short_checker[option.m_group];
 		if (checker.count(option.m_short) != 0) {
@@ -331,9 +335,11 @@ BaseInvoker* ProgramOption::invoke_set_group()
 
 bool ProgramOption::setGroup(const string& group)
 {
-	// TODO: add string verify
+	if (!m_groups.count(group))
+		return setError("Non-existed group");
 	m_group = group;
 	return true;
+
 }
 
 void ProgramOption::setFlag(int flag, bool on)

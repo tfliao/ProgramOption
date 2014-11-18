@@ -25,6 +25,7 @@ private:
 
 	std::vector<Option> m_default_options;
 	std::vector<Option> m_options;
+	std::set<string> m_groups;
 
 	/// checkers
 	std::map<std::string, std::set<string> > m_long_checker;
