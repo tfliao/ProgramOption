@@ -6,23 +6,28 @@ OBJ     = $(SRC:.cpp=.o)
 HEADER  = $(wildcard $(INCLUDE)/*.h) $(wildcard $(INCLUDE)/*.hpp)
 
 LIB     = libpo.a
-PROG    = po
+PROG    = sample
+
+LINK_PATH = .
+LINK_LIBS = po
+
+INCLUDE_OPT = $(addprefix -I, $(INCLUDE))
+LINK_OPT = $(addprefix -L, $(LINK_PATH)) $(addprefix -l, $(LINK_LIBS))
+
 
 .PHONY: program all clean
 
-all: $(PROG)
+all: $(LIB)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -I$(INCLUDE) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(INCLUDE_OPT) -c -o $@ $<
 
-lib: $(OBJ)
-	ar rc $(LIB) $(OBJ)
+$(LIB): $(OBJ)
+	ar rc $@ $(OBJ)
 
-$(PROG): $(OBJ) $(HEADER) lib
-	$(CXX) $(LDFLAGS) -I$(INCLUDE) -static -o $@ main.cpp -L. -lpo
+$(PROG): $(OBJ) $(HEADER) $(LIB)
+	$(CXX) $(LDFLAGS) -static -o $@ main.cpp $(LINK_OPT) $(INCLUDE_OPT)
 
 clean:
-	rm -f $(OBJ) $(PROG) $(LIB) prof
+	rm -f $(OBJ) $(PROG) $(LIB)
 
-prof: $(SRC) $(HEADER) lib
-	$(CXX) $(LDFLAGS) -g -pg -I$(INCLUDE) -static -o $@ main.cpp -L. -lpo
