@@ -1,9 +1,9 @@
 CXXFLAGS += -O2
 
+INCLUDE = include
 SRC     = $(wildcard src/*.cpp)
 OBJ     = $(SRC:.cpp=.o)
-HEADER  = $(wildcard include/*.h) $(wildcard include/*.hpp)
-INCLUDE = -Iinclude
+HEADER  = $(wildcard ${INCLUDE}/*.h) $(wildcard ${INCLUDE}/*.hpp)
 
 LIB     = libpo.a
 PROG    = po
@@ -13,13 +13,13 @@ PROG    = po
 all: $(PROG)
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) ${INCLUDE} -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -I${INCLUDE} -c -o $@ $<
 
 lib: ${OBJ}
 	ar rc ${LIB} ${OBJ}
 
 $(PROG): $(OBJ) $(HEADER) lib
-	$(CXX) $(LDFLAGS) ${INCLUDE} -static -o $@ main.cpp -L. -lpo
+	$(CXX) $(LDFLAGS) -I${INCLUDE} -static -o $@ main.cpp -L. -lpo
 
 clean:
 	rm -f ${OBJ} ${PROG} ${LIB} 
