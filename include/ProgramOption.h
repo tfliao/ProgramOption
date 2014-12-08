@@ -16,6 +16,11 @@ namespace program_option {
 
 class ProgramOption
 {
+public:
+	enum Flags {
+		OPTION_IN_END = 0, // display [option] after default arguments
+	};
+
 private:
 	string m_progname;
 	string m_desc;
@@ -43,9 +48,6 @@ private:
 	bool m_use_next;
 	int m_exist_first;
 
-	enum Flags {
-		OPTION_IN_END = 0, // display [option] after default arguments
-	};
 	unsigned int m_flag;
 
 public:
