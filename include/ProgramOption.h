@@ -41,6 +41,7 @@ private:
 	// parsing
 	int m_idx_def;
 	bool m_use_next;
+	int m_exist_first;
 
 	enum Flags {
 		OPTION_IN_END = 0, // display [option] after default arguments
@@ -51,6 +52,7 @@ public:
 	ProgramOption(const string& progname, const string& desc = "")
 		: m_progname(progname)
 		, m_desc(desc)
+		, m_exist_first(0)
 	{ reset(); }
 
 	bool addOption(const Option& option) ;

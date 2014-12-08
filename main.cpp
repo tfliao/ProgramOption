@@ -56,6 +56,7 @@ int main(int argc, char* argv[])
 
 	po.addOption(Option(operation, load<string>)
 		.is_default_arg("operation")
+		.is_exist_fisrt()
 		.description("some operations\nanother line\n")
 		);
 	po.addOption(Option(po.invoke_set_group())

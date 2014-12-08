@@ -8,14 +8,9 @@ HEADER  = $(wildcard $(INCLUDE)/*.h) $(wildcard $(INCLUDE)/*.hpp)
 LIB     = libpo.a
 PROG    = sample
 
-LINK_PATH = .
-LINK_LIBS = po
-
 INCLUDE_OPT = $(addprefix -I, $(INCLUDE))
-LINK_OPT = $(addprefix -L, $(LINK_PATH)) $(addprefix -l, $(LINK_LIBS))
 
-
-.PHONY: program all clean
+.PHONY: all clean
 
 all: $(LIB)
 
@@ -26,7 +21,7 @@ $(LIB): $(OBJ)
 	ar rc $@ $(OBJ)
 
 $(PROG): $(OBJ) $(HEADER) $(LIB)
-	$(CXX) $(LDFLAGS) -static -o $@ main.cpp $(LINK_OPT) $(INCLUDE_OPT)
+	$(CXX) $(LDFLAGS) -static -o $@ main.cpp $(INCLUDE_OPT) $(LIB)
 
 clean:
 	rm -f $(OBJ) $(PROG) $(LIB)

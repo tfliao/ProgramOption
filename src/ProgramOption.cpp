@@ -48,7 +48,7 @@ bool ProgramOption::addOption( const Option& option )
 		}
 		checker.insert(option.m_long);
 	}
-	
+
 	if (option.check_is_default() && m_default_options.size() > 0) {
 		Option& last_option = m_default_options.back();
 		if (last_option.check_is_arg_list()) {
@@ -58,8 +58,9 @@ bool ProgramOption::addOption( const Option& option )
 			return setError("default & optional should be successive");
 		}
 	}
-	
+
 	if (option.check_is_default()) {
+		if (option.check_is_exist_first()) ++ m_exist_first;
 		m_default_options.push_back(option);
 	} else {
 		m_options.push_back(option);
@@ -86,18 +87,24 @@ bool ProgramOption::parse( int argc, char** argv )
 				if (!parseDefault(opt)) return false;
 				break;
 			case 1: // short option
+				if (m_exist_first) {
+					return setError("some necessary option not appear");
+				}
 				m_use_next = false;
 				if (!parseShort(opt, next)) return false;
 				if (m_use_next) ++i;
 				break;
 			case 2: // long option
+				if (m_exist_first) {
+					return setError("some necessary option not appear");
+				}
 				m_use_next = false;
 				if (!parseLong(opt, next)) return false;
 				if (m_use_next) ++i;
 				break;
 		}
 	}
-	
+
 	if (m_idx_def+1 < m_default_options.size()) {
 		const Option& opt = m_default_options[m_idx_def+1];
 		if (!opt.check_is_optional()) {
@@ -121,6 +128,7 @@ bool ProgramOption::parseDefault( const string& value )
 		return setError("too many arguments");
 
 	const Option& option = m_default_options[m_idx_def];
+	if (option.check_is_exist_first()) --m_exist_first;
 	if ( !(*option.m_invoker) (option.m_name, value) ) {
 		return setError("Bad value \"" + value + "\" for \"" + option.m_name + "\"");
 	}
@@ -130,7 +138,7 @@ bool ProgramOption::parseDefault( const string& value )
 bool ProgramOption::parseLong( const string& opt, const char* next )
 {
 	int p = opt.find_first_of('=');
-	
+
 	string key;
 	if (p != string::npos) {
 		key = opt.substr(0, p);
@@ -236,7 +244,7 @@ string ProgramOption::usage(int level) const
 		oss << " "
 			<< (opt.check_is_optional() ? "[": "")
 			<< opt.m_name
-			<< (opt.check_is_arg_list() ? " ... ": "") 
+			<< (opt.check_is_arg_list() ? " ... ": "")
 			<< (opt.check_is_optional() ? "]": "") ;
 	}
 	oss << (conf.has_options && testFlag(OPTION_IN_END)?" [options]":"") ;
@@ -267,15 +275,15 @@ string ProgramOption::usage(int level) const
 		}
 
 		char buf[64];
-		if (opt.has_long() && opt.has_short()) 
+		if (opt.has_long() && opt.has_short())
 			sprintf(buf, "--%s, -%c", opt.m_long.c_str(), opt.m_short);
-		else if (!opt.has_long() && opt.has_short()) 
+		else if (!opt.has_long() && opt.has_short())
 			sprintf(buf, " -%c", opt.m_short);
-		else if (opt.has_long() && !opt.has_short()) 
+		else if (opt.has_long() && !opt.has_short())
 			sprintf(buf, "--%s", opt.m_long.c_str());
 		string sbuf = buf;
 		if (!opt.check_is_no_arg()) sbuf += " " + opt.m_name;
-		
+
 		sprintf(buf, "  %-*s  ", conf.max_opt_width, sbuf.c_str());
 		appendDesc(oss, buf, opt.m_desc);
 	}
@@ -315,7 +323,7 @@ public:
 	bool operator()(const string& key, const string& value) { m_os << m_po.usage(m_level) ; exit(0); return true ; }
 };
 
-BaseInvoker* ProgramOption::invoke_help( ostream& os, int level ) const 
+BaseInvoker* ProgramOption::invoke_help( ostream& os, int level ) const
 {
 	return new InvokeHelp(*this, os, level);
 }

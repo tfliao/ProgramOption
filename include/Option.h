@@ -30,6 +30,7 @@ private:
 		FLAG_OPTIONAL   = 2, ///< default option which is optional
 		FLAG_ARG_LIST   = 4, ///< default option which accepts all following arguments
 		FLAG_NO_ARG	    = 8, ///< the option need no argument
+		FLAG_EXIST_FIRST=16, ///< for default option, must exist before optional keys
 	};
 	unsigned int m_flag;
 
@@ -141,6 +142,10 @@ public:
 		m_flag |= FLAG_ARG_LIST ;
 		return *this;
 	}
+	inline Option& is_exist_fisrt() {
+		m_flag |= FLAG_EXIST_FIRST;
+		return *this;
+	}
 	inline Option& invisible() {
 		m_help_level = InvisibleLevel;
 		return *this;
@@ -183,15 +188,21 @@ private:
 				break;
 			}
 		}
+		// 4. check no flag conflict
+		if (check_is_optional() && check_is_exist_first()) {
+			ret = false;
+		}
+
 		return ret;
 	}
 
-	inline bool check_is_default()   const { return (m_flag & FLAG_DEFAULT) != 0; }
-	inline bool check_is_arg_list()   const { return (m_flag & FLAG_ARG_LIST) != 0; }
-	inline bool check_is_optional()  const { return (m_flag & FLAG_OPTIONAL) != 0; }
-	inline bool check_is_no_arg()	const { return (m_flag & FLAG_NO_ARG) != 0; }
+	inline bool check_is_default()      const { return (m_flag & FLAG_DEFAULT) != 0; }
+	inline bool check_is_arg_list()     const { return (m_flag & FLAG_ARG_LIST) != 0; }
+	inline bool check_is_optional()     const { return (m_flag & FLAG_OPTIONAL) != 0; }
+	inline bool check_is_no_arg()       const { return (m_flag & FLAG_NO_ARG) != 0; }
+	inline bool check_is_exist_first()  const { return (m_flag & FLAG_EXIST_FIRST) != 0; }
 	
-	inline bool check_is_invisible() const { return (m_help_level == InvisibleLevel); }
+	inline bool check_is_invisible()    const { return (m_help_level == InvisibleLevel); }
 	inline bool check_visible_for(int level) const { return m_help_level <= level; } 
 
 	inline int help_level() const { return m_help_level; }
