@@ -63,6 +63,7 @@ public:
 	string usage(int level = 0) const ;
 	void reset () ;
 	const string& getError() const;
+	const string& getGroup() const;
 	bool setGroup(const string& group);
 
 	BaseInvoker* invoke_help(std::ostream& os, int level = 0) const ;

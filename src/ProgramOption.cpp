@@ -341,6 +341,10 @@ BaseInvoker* ProgramOption::invoke_set_group()
 	return new GroupSetter(*this);
 }
 
+const string& ProgramOption::getGroup() const
+{
+	return m_group;
+}
 bool ProgramOption::setGroup(const string& group)
 {
 	if (!m_groups.count(group))
