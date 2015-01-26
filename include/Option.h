@@ -210,6 +210,8 @@ private:
 	inline bool has_short() const { return m_short != 0; }
 	inline bool has_group() const { return !m_group.empty(); }
 
+	inline bool belong_to(const string& group) const { return m_group == group; }
+
 	static bool group_cmp(const Option& o1, const Option& o2) {
 		return o1.m_group < o2.m_group;
 	}

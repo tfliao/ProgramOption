@@ -60,13 +60,13 @@ public:
 	bool addOption(const Option& option) ;
 
 	bool parse (int argc, char** argv) ;
-	string usage(int level = 0) const ;
+	string usage(int level = 0, bool group_only = false) const ;
 	void reset () ;
 	const string& getError() const;
 	const string& getGroup() const;
 	bool setGroup(const string& group);
 
-	BaseInvoker* invoke_help(std::ostream& os, int level = 0) const ;
+	BaseInvoker* invoke_help(std::ostream& os, int level = 0, bool group_only = false) const ;
 	BaseInvoker* invoke_set_group() ;
 
 	void setFlag(int flag, bool on = true);
@@ -83,7 +83,7 @@ private:
 	void appendDesc(std::ostream& os, const string& first_line, const string& desc) const;
 	bool testFlag(int flag) const;
 
-	void analysisDisplayConf(DisplayConf& conf, int level = 0) const;
+	void analysisDisplayConf(DisplayConf& conf, int level = 0, bool group_only = false) const;
 };
 
 }

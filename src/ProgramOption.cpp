@@ -205,7 +205,7 @@ const Option* ProgramOption::findOption( const string& long_key, char short_key 
 		const Option& opt = m_options[i];
 		if ( (opt.m_long == long_key && !long_key.empty() ) ||
 			 (opt.m_short == short_key && short_key != 0 ) ) {
-			if (opt.m_group == this->m_group) {
+			if (opt.belong_to(getGroup())) {
 				return &opt; // match both group and key
 			} else if (!opt.has_group()) {
 				cand = &opt; // match key without group
@@ -231,10 +231,11 @@ void ProgramOption::appendDesc(ostream& os, const string& first_line, const stri
 	}
 }
 
-string ProgramOption::usage(int level) const
+string ProgramOption::usage(int level, bool group_only) const
 {
 	DisplayConf conf;
-	analysisDisplayConf(conf, level);
+
+	analysisDisplayConf(conf, level, group_only);
 
 	ostringstream oss ;
 	oss << "Usage: " << m_progname;
@@ -261,6 +262,10 @@ string ProgramOption::usage(int level) const
 			appendDesc(oss, buf, opt.m_desc);
 		}
 	}
+
+	if (getGroup().empty())
+		group_only = false;
+
 	if (conf.has_options) {
 		oss << "options: " << endl;
 	}
@@ -268,8 +273,10 @@ string ProgramOption::usage(int level) const
 	for (unsigned int i=0;i<m_options.size();++i) {
 		const Option& opt = m_options[i];
 		if (!opt.check_visible_for(level)) continue;
+		if (group_only && opt.has_group()
+		               && !opt.belong_to(getGroup())) continue;
 
-		if (opt.m_group != last_group) {
+		if (!opt.belong_to(last_group)) {
 			last_group = opt.m_group;
 			oss << "[" << last_group << "]:" << endl;
 		}
@@ -318,14 +325,15 @@ class InvokeHelp : public BaseInvoker
 	const ProgramOption& m_po ;
 	ostream& m_os;
 	int m_level;
+	bool m_go;
 public:
-	InvokeHelp(const ProgramOption& po, ostream& os, int level) : m_po(po), m_os(os), m_level(level) {}
-	bool operator()(const string& key, const string& value) { m_os << m_po.usage(m_level) ; exit(0); return true ; }
+	InvokeHelp(const ProgramOption& po, ostream& os, int level, bool group_only) : m_po(po), m_os(os), m_level(level), m_go(group_only) {}
+	bool operator()(const string& key, const string& value) { m_os << m_po.usage(m_level, m_go) ; exit(0); return true ; }
 };
 
-BaseInvoker* ProgramOption::invoke_help( ostream& os, int level ) const
+BaseInvoker* ProgramOption::invoke_help( ostream& os, int level, bool group_only ) const
 {
-	return new InvokeHelp(*this, os, level);
+	return new InvokeHelp(*this, os, level, group_only);
 }
 
 class GroupSetter : public BaseInvoker
@@ -368,7 +376,7 @@ bool ProgramOption::testFlag(int flag) const
 	return (m_flag & (1 << flag)) != 0;
 }
 
-void ProgramOption::analysisDisplayConf(DisplayConf& conf, int level) const
+void ProgramOption::analysisDisplayConf(DisplayConf& conf, int level, bool group_only) const
 {
 	conf.has_options = false;
 	conf.max_opt_width = 0;
@@ -380,16 +388,22 @@ void ProgramOption::analysisDisplayConf(DisplayConf& conf, int level) const
 		conf.max_def_width = max(conf.max_def_width, width);
 	}
 
+	// if no group set
+	if (getGroup().empty())
+		group_only = false;
+
 	for (unsigned int i = 0; i < m_options.size(); ++i) {
 		const Option& option = m_options[i];
-		if (option.help_level() <= level) {
-			int width = 0;
-			if (option.has_long()) width += 2 + option.m_long.length();
-			if (option.has_short()) width += 2 + 2;
-			if (!option.check_is_no_arg()) width += 1 + option.m_name.length();
-			conf.max_opt_width = max(conf.max_opt_width, width);
-			conf.has_options = true;
-		}
+		if (option.help_level() > level) continue;
+		if (group_only && option.has_group()
+		               && !option.belong_to(getGroup())) continue;
+
+		int width = 0;
+		if (option.has_long()) width += 2 + option.m_long.length();
+		if (option.has_short()) width += 2 + 2;
+		if (!option.check_is_no_arg()) width += 1 + option.m_name.length();
+		conf.max_opt_width = max(conf.max_opt_width, width);
+		conf.has_options = true;
 	}
 }
 

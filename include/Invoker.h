@@ -96,6 +96,7 @@ bool load ( _T& ref, const string& key, const string& value )
 		return false;
 	return true;
 }
+
 /*!
 	@brief  specialization implementation of string type
 	@author T.F. Liao
@@ -112,7 +113,15 @@ bool load<string> ( string& ref, const string& key, const string& value ) ;
 template<>
 bool load<bool> ( bool& ref, const string& key, const string& value ) ;
 
-
+/*!
+	@brief  a template implementation of loader for container
+	@author T.F. Liao
+	@param  ref [out]   loaded value to store in
+	@param  key [in] key of variable push
+	@param  value [in] value of variable to push
+	@return load successful or not
+	the implementation use load<value_type> for each value, and push to container
+*/
 template<class _Container>
 bool load2 (_Container& ref, const string& key, const string& value)
 {
@@ -159,6 +168,38 @@ template<class _Callable>
 MethodCaller<_Callable>* newMethodCaller(_Callable c)
 {
 	return new MethodCaller<_Callable>(c);
+}
+
+/*!
+	@brief  a template implementation of loader that support scale postfix
+	@author T.F. Liao
+	@param  ref [out]   loaded value to store in
+	@param  key [in] key of variable set
+	@param  value [in] value of variable set
+	@return load successful or not
+	the implementation is convert string to the type with stringstream
+	and check if any chars not used.
+*/
+template<class _T>
+bool scale_load ( _T& ref, const string& key, const string& value )
+{
+	std::istringstream iss(value);
+
+	iss >> ref ;
+
+	if (!iss && iss.rdbuf()->in_avail() > 1)
+		return false;
+	if (iss.rdbuf()->in_avail()) {
+		char s;
+		iss >> s;
+		switch (s) {
+			case 'k': case 'K': ref <<= 10; break;
+			case 'm': case 'M': ref <<= 20; break;
+			case 'g': case 'G': ref <<= 30; break;
+			default: return false;
+		}
+	}
+	return true;
 }
 
 }
